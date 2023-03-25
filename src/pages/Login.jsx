@@ -1,5 +1,9 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import { FaSignInAlt } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { useSelector, useDispatch } from "react-redux";
+import { login, reset } from "../features/auth/authSlice";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
 
@@ -10,6 +14,23 @@ export default function Login() {
 
     const {email, password} = formData;
 
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const {user, isLoading, isError, isSuccess, message } = useSelector((state) => { return state.auth });
+
+    useEffect(() => {
+        if (isError) {
+            toast.error(message);
+        }
+
+        // redirect when logged in
+        if (isSuccess || user) {
+            navigate("/");
+        }
+        dispatch(reset());
+    }, [isError, isSuccess, user, message, navigate, dispatch]);
+
     const onChange = (e) => {
         setFormData((prev) => ({
             ...prev,
@@ -19,8 +40,14 @@ export default function Login() {
 
     const onSubmit = (e) => {
         e.preventDefault();
+        
+        const userData = {
+            email,
+            password
+        }
+    
+        dispatch(login(userData));
     }
-
 
     return (
         <>
